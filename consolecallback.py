@@ -23,18 +23,17 @@ def error_handler(unused, error) -> None:
 
 
 class Console(object):
-    def __init__(self, uri: str, uuid: str) -> None:
+    def __init__(self, uri: str, domain_name: str) -> None:
         self.uri = uri
-        self.uuid = uuid
+        # self.uuid = uuid
+        self.domain_name = domain_name
         self.connection = libvirt.open(uri)
-        self.domain = self.connection.lookupByUUIDString(uuid)
+        self.domain = self.connection.lookupByName(domain_name)
         self.state = self.domain.state(0)
         self.connection.domainEventRegister(lifecycle_callback, self)
         self.stream = None  # type: Optional[libvirt.virStream]
         self.run_console = True
         self.stdin_watch = -1
-        logging.info("%s initial state %d, reason %d",
-                     self.uuid, self.state[0], self.state[1])
 
 
 def check_console(console: Console) -> bool:
@@ -70,8 +69,7 @@ def stream_callback(stream: libvirt.virStream, events: int, console: Console) ->
 
 def lifecycle_callback(connection: libvirt.virConnect, domain: libvirt.virDomain, event: int, detail: int, console: Console) -> None:
     console.state = console.domain.state(0)
-    logging.info("%s transitioned to state %d, reason %d",
-                 console.uuid, console.state[0], console.state[1])
+
 
 
 # main
